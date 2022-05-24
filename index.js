@@ -15,6 +15,7 @@ async function run(){
     try{
         await client.connect();
         const partsCollection = client.db("loyal-parts").collection("parts")
+        const orderCollection = client.db("loyal-parts").collection("order")
 
         app.get('/parts',async(req,res)=>{
             const query={}
@@ -35,6 +36,12 @@ async function run(){
             const result=await partsCollection.insertOne(newparts)
             res.send(result);
 
+        });
+        app.get('/order/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = {_id: ObjectId(id)}
+            const result = await orderCollection.findOne(query);
+            res.send(result)
         });
 
     }
