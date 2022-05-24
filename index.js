@@ -29,6 +29,14 @@ async function run(){
             res.send(parts)
         });
 
+        //post
+        app.post('/parts',async(req,res)=>{
+            const newparts=req.body;
+            const result=await partsCollection.insertOne(newparts)
+            res.send(result);
+
+        });
+
     }
     finally{
 
