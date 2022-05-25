@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config()
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion,ObjectId } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -23,26 +23,34 @@ async function run(){
             const parts = await cursor.toArray();
             res.send(parts);
         });
+
         app.get('/parts/:id',async(req,res)=>{
             const id=req.params.id
             const query={_id:ObjectId(id)};
-            const parts=await partsCollection.findOne(query);
-            res.send(parts)
+            const partsItem=await partsCollection.findOne(query);
+            res.send(partsItem)
         });
+
+        app.post('/order',async(req,res)=>{
+            const order=req.body;
+            const result=await orderCollection.insertOne(order)
+            res.send(result)
+        })
 
         //post
-        app.post('/parts',async(req,res)=>{
-            const newparts=req.body;
-            const result=await partsCollection.insertOne(newparts)
-            res.send(result);
+        // app.post('/parts',async(req,res)=>{
+        //     const newparts=req.body;
+        //     const result=await partsCollection.insertOne(newparts)
+        //     res.send(result);
 
-        });
-        app.get('/order/:id', async (req, res) => {
-            const id = req.params.id;
-            const query = {_id: ObjectId(id)}
-            const result = await orderCollection.findOne(query);
-            res.send(result)
-        });
+        // });
+
+        // app.get('/order/:id', async (req, res) => {
+        //     const id = req.params.id;
+        //     const query = {_id: ObjectId(id)}
+        //     const result = await orderCollection.findOne(query);
+        //     res.send(result)
+        // });
 
     }
     finally{
