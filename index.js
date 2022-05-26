@@ -51,13 +51,21 @@ async function run(){
             const result=await orderCollection.insertOne(order)
             res.send({ success: true, result })
         });
-        
+
         app.get('/order',async(req,res)=>{
             const email=req.query.email
             const query={email:email};
             const order=await orderCollection.find(query).toArray();
             res.send(order);
         })
+        //delete order
+        app.delete('/order/:email', verifyJWT, async (req, res) => {
+            const email = req.params.email;
+            const filter = {email: email};
+            const result = await orderCollection.deleteOne(filter);
+            res.send(result);
+          });
+      
 
         //post
         // app.post('/parts',async(req,res)=>{
