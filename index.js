@@ -147,6 +147,13 @@ async function run(){
           const result = await reviewCollection.insertOne(order);
           res.send({ success: true, result })
       });
+
+      //get all reviews
+      app.get('/reviews', async (req, res) => {
+        const query = {}
+        const items = await reviewCollection.find(query).toArray()
+        res.send(items)
+    })
       // add new product  
       app.post('/addproduct',verifyJWT,verifyAdmin, async (req, res) => {
         const product = req.body;
@@ -167,21 +174,6 @@ async function run(){
         const updateOrder = await orderCollection.updateOne(filter,updateDoc);
         res.send(updateOrder)
     });
-
-        //post
-        // app.post('/parts',async(req,res)=>{
-        //     const newparts=req.body;
-        //     const result=await partsCollection.insertOne(newparts)
-        //     res.send(result);
-
-        // });
-
-        // app.get('/order/:id', async (req, res) => {
-        //     const id = req.params.id;
-        //     const query = {_id: ObjectId(id)}
-        //     const result = await orderCollection.findOne(query);
-        //     res.send(result)
-        // });
 
     }
     finally{
