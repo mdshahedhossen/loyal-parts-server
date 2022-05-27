@@ -36,6 +36,7 @@ async function run(){
         const partsCollection = client.db("loyal-parts").collection("parts")
         const userCollection = client.db("loyal-parts").collection("users")
         const orderCollection = client.db("loyal-parts").collection("order")
+        const reviewCollection = client.db("loyal-parts").collection("reviews")
 
         app.get('/parts',async(req,res)=>{
             const query={}
@@ -106,6 +107,7 @@ async function run(){
             const order=await orderCollection.find(query).toArray();
             res.send(order);
         })
+        
         //delete order
         app.delete('/cancelorder/:id', async (req, res) => {
             const id= req.params.id;
@@ -114,6 +116,12 @@ async function run(){
             res.send(result);
           });
       
+          //add review for user
+         app.post('/addreview',verifyJWT, async (req, res) => {
+          const order = req.body;
+          const result = await reviewCollection.insertOne(order);
+          res.send({ success: true, result })
+      });
 
         //post
         // app.post('/parts',async(req,res)=>{
