@@ -37,6 +37,16 @@ async function run(){
         const userCollection = client.db("loyal-parts").collection("users")
         const orderCollection = client.db("loyal-parts").collection("order")
         const reviewCollection = client.db("loyal-parts").collection("reviews")
+        // /verifyadmin function
+        const verifyAdmin =async( req,res,next)=>{
+            const requester = req.decoded.email;
+            const isAdmin = await userCollection.findOne({email:requester});
+            if(isAdmin.role === 'admin'){
+                next()
+            }else{
+                return res.status(401).send({message:'Forbidden access'})
+            }
+        }
 
         app.get('/parts',async(req,res)=>{
             const query={}
@@ -100,6 +110,13 @@ async function run(){
             const result=await orderCollection.insertOne(order)
             res.send({ success: true, result })
         });
+        
+        //get all orders list for admin
+        app.get('/orders',verifyJWT,verifyAdmin, async (req, res) => {
+          const query = {}
+          const items = await orderCollection.find(query).toArray()
+          res.send(items)
+      })
 
         app.get('/order',verifyJWT, async(req,res)=>{
             const email=req.query.email
@@ -122,6 +139,19 @@ async function run(){
           const result = await reviewCollection.insertOne(order);
           res.send({ success: true, result })
       });
+
+      // update shiping info
+      app.patch('/shipp/:id',verifyJWT,verifyAdmin, async (req, res) => {
+        const id = req.params.id;
+        const filter = {_id: ObjectId(id)}
+        const updateDoc = {
+            $set:{
+                shippment:true,
+            }
+        }
+        const updateOrder = await orderCollection.updateOne(filter,updateDoc);
+        res.send(updateOrder)
+    });
 
         //post
         // app.post('/parts',async(req,res)=>{
