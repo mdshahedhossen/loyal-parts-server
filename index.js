@@ -54,6 +54,7 @@ async function run(){
             const parts = await cursor.toArray();
             res.send(parts);
         });
+        
 
         app.get('/user',verifyJWT, async (req, res) => {
             const users = await userCollection.find().toArray();
@@ -110,13 +111,20 @@ async function run(){
             const result=await orderCollection.insertOne(order)
             res.send({ success: true, result })
         });
-        
+
         //get all orders list for admin
         app.get('/orders',verifyJWT,verifyAdmin, async (req, res) => {
           const query = {}
           const items = await orderCollection.find(query).toArray()
           res.send(items)
       })
+      //deleteing product by admin
+      app.delete('/deleteparts/:id',verifyJWT,verifyAdmin, async (req, res) => {
+        const id = req.params.id;
+        const filter = {_id: ObjectId(id)}
+        const result = await partsCollection.deleteOne(filter);
+        res.send(result)
+    });
 
         app.get('/order',verifyJWT, async(req,res)=>{
             const email=req.query.email
