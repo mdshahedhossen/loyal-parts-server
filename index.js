@@ -95,7 +95,7 @@ async function run(){
               $set: user,
             };
             const result = await userCollection.updateOne(filter, updateDoc, options);
-            const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
+            const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '24h' })
             res.send({ result, token });
           })
 
@@ -147,6 +147,13 @@ async function run(){
           const result = await reviewCollection.insertOne(order);
           res.send({ success: true, result })
       });
+      // add new product  
+      app.post('/addproduct',verifyJWT,verifyAdmin, async (req, res) => {
+        const product = req.body;
+        const result = await partsCollection.insertOne(product);
+        console.log(result)
+        res.send({ success: true, result })
+    });
 
       // update shiping info
       app.patch('/shipp/:id',verifyJWT,verifyAdmin, async (req, res) => {
