@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 var jwt = require('jsonwebtoken');
 require('dotenv').config()
+// const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { MongoClient, ServerApiVersion,ObjectId } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 5000;
@@ -36,6 +37,7 @@ async function run(){
         const partsCollection = client.db("loyal-parts").collection("parts")
         const userCollection = client.db("loyal-parts").collection("users")
         const orderCollection = client.db("loyal-parts").collection("order")
+        const paymentCollection =client.db("loyal-parts").collection("payments")
         const reviewCollection = client.db("loyal-parts").collection("reviews")
         // /verifyadmin function
         const verifyAdmin =async( req,res,next)=>{
@@ -47,6 +49,18 @@ async function run(){
                 return res.status(401).send({message:'Forbidden access'})
             }
         }
+
+        app.post('/create-payment-intent', verifyJWT, async(req, res) =>{
+          const service = req.body;
+          const price = service.price;
+          const amount = price*100;
+          const paymentIntent = await stripe.paymentIntents.create({
+            amount : amount,
+            currency: 'usd',
+            payment_method_types:['card']
+          });
+          res.send({clientSecret: paymentIntent.client_secret})
+        });
 
         app.get('/parts',async(req,res)=>{
             const query={}
@@ -131,7 +145,32 @@ async function run(){
             const query={email:email};
             const order=await orderCollection.find(query).toArray();
             res.send(order);
-        })
+        });
+
+        //get singel order details for payment
+        app.get('/order/:id',verifyJWT, async (req, res) => {
+          const id = req.params.id;
+          const query = {_id: ObjectId(id)}
+          const result = await orderCollection.findOne(query);
+          res.send(result)
+      });
+
+
+      //update payment info in order object
+      app.patch('/order/:id',verifyJWT, async (req, res) => {
+          const id = req.params.id;
+          const payment = req.body;
+          const filter = {_id: ObjectId(id)}
+          const updateDoc = {
+              $set:{
+                  paid:true,
+                  transactionId: payment.transactionId
+              }
+          }
+          const updateOrder = await orderCollection.updateOne(filter,updateDoc);
+          const updatePayment = await paymentCollection.insertOne(payment)
+          res.send(updateOrder)
+      });
         
         //delete order
         app.delete('/cancelorder/:id', async (req, res) => {
