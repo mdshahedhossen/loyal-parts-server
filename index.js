@@ -141,6 +141,14 @@ async function run(){
         const result = await partsCollection.deleteOne(filter);
         res.send(result)
     });
+    
+    //delete user --- admin
+    app.delete('/deleteuser/:email',verifyJWT,verifyAdmin, async (req, res) => {
+      const email = req.params.email;
+      const filter = {email:email}
+      const result = await userCollection.deleteOne(filter);
+      res.send(result)
+  });
 
         app.get('/order',verifyJWT, async(req,res)=>{
             const email=req.query.email
